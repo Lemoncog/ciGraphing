@@ -2,9 +2,11 @@
 
 import commands
 import subprocess
-import os
+import os, errno
 import re
 import json
+import sys
+import shutil
 
 class Changes:
 	def __init__(self, inserts, deletes, filename):
@@ -52,16 +54,25 @@ class Commit:
 
 
 
+gitPath = sys.argv[1]
 
-gitComamnd = "git log -200 --numstat"
+tempFolder = "/tempFolder"
+gitCloneCommand = "git clone {} {}".format(gitPath, tempFolder)
 
-pr = subprocess.Popen( gitComamnd, cwd = os.path.dirname( './' ), shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE )
+pr = subprocess.Popen( gitCloneCommand, cwd = os.path.dirname( './' ), shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE )
+(out, error) = pr.communicate()
+
+gitCommand = "git --git-dir {}/.git log -200 --numstat".format(tempFolder)
+
+pr = subprocess.Popen( gitCommand, cwd = os.path.dirname( './' ), shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE )
 (out, error) = pr.communicate()
 
 print "Error : " + str(error) 
 print "out : " + str(out)
 
 output = str(out)
+
+#shutil.rmtree('./{}'.format(tempFolder))
 
 lines = output.split('\n')
 
